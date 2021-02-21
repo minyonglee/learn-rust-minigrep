@@ -1,7 +1,6 @@
+use std::env;
 use std::error::Error;
 use std::fs;
-use std::env;
-
 
 pub struct Config {
     pub query: String,
@@ -11,21 +10,24 @@ pub struct Config {
 
 impl Config {
     pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
-
         args.next();
         let query = match args.next() {
             Some(arg) => arg,
-            None => return Err("Didn't get a query string")
+            None => return Err("Didn't get a query string"),
         };
 
         let filename = match args.next() {
             Some(arg) => arg,
-            None => return Err("Didn't get a filename")
+            None => return Err("Didn't get a filename"),
         };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
-        Ok(Config {query, filename, case_sensitive})
+        Ok(Config {
+            query,
+            filename,
+            case_sensitive,
+        })
     }
 }
 
@@ -45,15 +47,17 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-
-    contents.lines().filter(|line| line.contains(query)).collect()
-
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-
-    contents.lines().filter(|line| line.to_lowercase().contains(&query.to_lowercase())).collect()
-
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query.to_lowercase()))
+        .collect()
 }
 
 #[cfg(test)]
@@ -68,7 +72,7 @@ Rust:
 safe, fast, productive.
 Pick three.
 Duct tape.";
-        
+
         assert_eq!(vec!["safe, fast, productive."], search(query, contents));
     }
 
@@ -80,8 +84,9 @@ Rust:
 safe, fast, productive.
 Pick three.
 Trust me.";
-        
-        assert_eq!(vec!["Rust:", "Trust me."],
+
+        assert_eq!(
+            vec!["Rust:", "Trust me."],
             search_case_insensitive(query, contents)
         );
     }
